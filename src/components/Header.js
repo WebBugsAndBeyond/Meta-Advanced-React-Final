@@ -33,18 +33,7 @@ const socials = [
 ];
 
 const Header = () => {
-  const handleClick = (anchor) => () => {
-    console.log(`anchor clicked: ${anchor}`);
-    const id = `${anchor}-section`;
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  };
-
+  const headerRef = useRef(null);
   const handleSectionNavigationClick = useCallback((event) => {
     const section = event.target.dataset.section;
     const sectionSelector = `#${section}-section`;
@@ -54,9 +43,36 @@ const Header = () => {
             behavior: 'smooth',
             block: 'start',
         });
+        window.addEventListener('scrollend', () => {
+            headerRef.current.style.transform = "translateY(-200px)";
+        }, {
+            once: true,
+            passive: true,
+        });
     }
   }, []);
 
+  useEffect(() => {
+    
+    let scrollPos = window.scrollY;
+    
+    const handleScroll = () => {
+        if (!headerRef.current) {
+            return;
+        }
+        const currentScrollY = window.scrollY;
+        if (currentScrollY < scrollPos) {
+            headerRef.current.style.transform = "translateY(0)";
+        } else if (currentScrollY > scrollPos) {
+            headerRef.current.style.transform = "translateY(-200px)";
+        }
+        scrollPos = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   return (
     <Box
       position="fixed"
@@ -68,6 +84,7 @@ const Header = () => {
       transitionDuration=".3s"
       transitionTimingFunction="ease-in-out"
       backgroundColor="#18181b"
+      ref={headerRef}
     >
       <Box color="white" maxWidth="1280px" margin="0 auto">
         <HStack
